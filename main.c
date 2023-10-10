@@ -6,6 +6,17 @@ void err(char *msg)
 	printf("Error: %s\n", msg);
 }
 
+long long get_time_ms(struct timeval start_time)
+{
+	long long s_milliseconds = (long long)(start_time.tv_sec) * 1000 +
+                            (long long)(start_time.tv_usec) / 1000;
+	struct timeval current_time;
+	gettimeofday(&current_time, nullptr);
+	long long c_milliseconds = (long long)(current_time.tv_sec) * 1000 +
+                            (long long)(current_time.tv_usec) / 1000;
+	return c_milliseconds - s_milliseconds;
+}
+
 int fill_args(int ac, char **av, t_sim_data *data)
 {
 	if(ac < 4 || ac > 5)
@@ -15,10 +26,10 @@ int fill_args(int ac, char **av, t_sim_data *data)
 	data->time_to_eat = ft_atoi(av[2]);
 	data->time_to_sleep = ft_atoi(av[3]);
 	if(ac == 5)
-		data->noftephm_eat = ft_atoi(av[4]);
+		data->mealsCount = ft_atoi(av[4]);
 	else 
-		data->noftephm_eat = 0;
-	data->value = 0;
+		data->mealsCount = 0;
+	gettimeofday(&data->start_time, nullptr);
 	return (0);
 }
 
@@ -45,21 +56,57 @@ void print_data(t_sim_data *data)
 	printf("Time To Die: %d\n",data->time_to_die);
 	printf("Time To Eat: %d\n",data->time_to_eat);
 	printf("Time To Sleep: %d\n",data->time_to_sleep);
-	printf("Number Of Times Each Philo Must Eat: %d\n",data->noftephm_eat);
+	printf("Number of Meals: %d\n",data->mealsCount);
 
 }
 
+void lock_and_print(t_philosopher *ph, int what)
+{
+	pthread_mutex_lock(&ph->data->write_lock);
+	if(what == PH_PRINT_THINK)
+		printf("%lld ms: %d is thinking\n", get_time_ms(ph->data->start_time), ph->id);
+	else if (what == PH_PRINT_EAT)
+		printf("%lld ms: %d is eating\n", get_time_ms(ph->data->start_time), ph->id);
+	else if (what == PH_PRINT_SLEEP)
+		printf("%lld ms: %d is sleeping\n", get_time_ms(ph->data->start_time), ph->id);
+	pthread_mutex_unlock(&ph->data->write_lock);
+}
 
+pthread_mutex_t *left_fork(t_philosopher *ph)
+{
+	int id = ph->id;
+	if(id == ph->data->entities_count - 1)
+		return ph->data->forks;
+	return ph->data->forks + id + 1;
+}
+
+void eat(t_philosopher *ph)
+{
+	int id = ph->id;
+	pthread_mutex_lock(left_fork(ph));
+	pthread_mutex_lock(&ph->data->forks[id]);
+	lock_and_print(ph, PH_PRINT_EAT);
+	sleep(1);
+	pthread_mutex_unlock(left_fork(ph));
+	pthread_mutex_unlock(&ph->data->forks[id]);
+}
+void sleep_ph(t_philosopher *ph)
+{
+	lock_and_print(ph, PH_PRINT_SLEEP);
+	sleep(2);
+}
 
 void	*life(void *arg)
 {
 	t_philosopher *ph = (t_philosopher *)arg;
-	for (size_t i = 0; i < 1000000; i++)
+	while (1)
 	{
-		pthread_mutex_lock(&ph->data->write_lock);
-		ph->data->value++;
-		pthread_mutex_unlock(&ph->data->write_lock);
+		lock_and_print(ph, PH_PRINT_THINK);
+		eat(ph);
+		sleep_ph(ph);
+		break;
 	}
+	
 	
 	return (nullptr);
 }
@@ -132,6 +179,5 @@ int main(int ac, char **av)
 	if(init(&sim_data) != PH_SUCCESS)
 		return (1);
 	wait_threads(&sim_data);
-	printf("Value is: %d\n", sim_data.value);
 	return (0);
 }

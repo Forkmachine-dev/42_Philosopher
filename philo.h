@@ -9,10 +9,15 @@
 #define PH_FAILED_THREAD_CREATE 4
 #define PH_FAILED_INVALID_ARGS 5
 
+#define PH_PRINT_THINK 0
+#define PH_PRINT_EAT 1
+#define PH_PRINT_SLEEP 2
+
 #include <stdio.h>
-#include <time.h>
+#include <sys/time.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
 
 typedef struct s_sim_data t_sim_data;
 typedef struct s_philosopher
@@ -29,10 +34,10 @@ typedef struct s_sim_data
 	int time_to_die;
 	int time_to_eat;
 	int time_to_sleep;
-	int noftephm_eat;
+	int mealsCount;
 	pthread_mutex_t *forks;
 	pthread_mutex_t write_lock;
-	int value;
+	struct timeval start_time;
 	t_philosopher *philos;
 }			t_sim_data;
 
