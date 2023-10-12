@@ -29,6 +29,7 @@ int fill_args(int ac, char **av, t_sim_data *data)
 		data->mealsCount = ft_atoi(av[4]);
 	else 
 		data->mealsCount = 0;
+	data->should_stop = false;
 	gettimeofday(&data->start_time, nullptr);
 	return (0);
 }
@@ -60,16 +61,44 @@ void print_data(t_sim_data *data)
 
 }
 
+
+
 void lock_and_print(t_philosopher *ph, int what)
 {
+	long long t = get_time_ms(ph->last_time_ate);
+	if(ph->data->should_stop)
+		return;
 	pthread_mutex_lock(&ph->data->write_lock);
-	if(what == PH_PRINT_THINK)
-		printf("%lld ms: %d is thinking\n", get_time_ms(ph->data->start_time), ph->id);
+	if(ph->data->should_stop)
+	{
+		pthread_mutex_unlock(&ph->data->write_lock);
+		return;
+	}
+	if (what == PH_PRINT_DEATH)
+	{
+		printf("%lld ms: %d is dead\n", get_time_ms(ph->data->start_time), ph->id);
+		ph->data->should_stop = true;
+	}
+	else if(what == PH_PRINT_THINK)
+		printf("%lld ms: %d is thinking      |%lldms\n", get_time_ms(ph->data->start_time), ph->id, t);
 	else if (what == PH_PRINT_EAT)
-		printf("%lld ms: %d is eating\n", get_time_ms(ph->data->start_time), ph->id);
+		printf("%lld ms: %d is eating        |%lldms\n", get_time_ms(ph->data->start_time), ph->id, t);
 	else if (what == PH_PRINT_SLEEP)
-		printf("%lld ms: %d is sleeping\n", get_time_ms(ph->data->start_time), ph->id);
+		printf("%lld ms: %d is sleeping      |%lldms\n", get_time_ms(ph->data->start_time), ph->id, t);
 	pthread_mutex_unlock(&ph->data->write_lock);
+}
+
+bool check_death(t_philosopher *ph)
+{
+	long long t = get_time_ms(ph->last_time_ate);
+	//printf("ph %d| t: %lldms | tmd:%lld\n", ph->id, t,(long long) ph->data->time_to_die);
+	if (t >= (long long)ph->data->time_to_die)
+	{
+		ph->is_dead = true;
+		lock_and_print(ph, PH_PRINT_DEATH);
+		return true;
+	}
+	return false;
 }
 
 pthread_mutex_t *left_fork(t_philosopher *ph)
@@ -83,31 +112,37 @@ pthread_mutex_t *left_fork(t_philosopher *ph)
 void eat(t_philosopher *ph)
 {
 	int id = ph->id;
+	if(id % 2 != 0)
+		usleep(100);
+	if(check_death(ph))
+		return;
 	pthread_mutex_lock(left_fork(ph));
 	pthread_mutex_lock(&ph->data->forks[id]);
+	gettimeofday(&ph->last_time_ate, nullptr);	
 	lock_and_print(ph, PH_PRINT_EAT);
-	sleep(1);
+	usleep(ph->data->time_to_eat * 1000);
 	pthread_mutex_unlock(left_fork(ph));
 	pthread_mutex_unlock(&ph->data->forks[id]);
 }
 void sleep_ph(t_philosopher *ph)
 {
+	if(check_death(ph))
+		return;
 	lock_and_print(ph, PH_PRINT_SLEEP);
-	sleep(2);
+	usleep(ph->data->time_to_sleep * 1000);
 }
+
 
 void	*life(void *arg)
 {
 	t_philosopher *ph = (t_philosopher *)arg;
-	while (1)
+	gettimeofday(&ph->last_time_ate, nullptr);
+	while (!ph->data->should_stop)
 	{
 		lock_and_print(ph, PH_PRINT_THINK);
 		eat(ph);
 		sleep_ph(ph);
-		break;
 	}
-	
-	
 	return (nullptr);
 }
 
@@ -127,6 +162,8 @@ int init_philosophers(t_sim_data *data)
 	{
 		data->philos[i].data = data;
 		data->philos[i].id = i;
+		data->philos[i].is_dead = false;
+		data->philos[i].meals_eaten = 0;
 		if(assert(pthread_create(&data->philos[i].philo_thread, nullptr,life, &data->philos[i])) != PH_SUCCESS)
 			return PH_FAILED_THREAD_CREATE;
 		i++;
@@ -181,3 +218,4 @@ int main(int ac, char **av)
 	wait_threads(&sim_data);
 	return (0);
 }
+

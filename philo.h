@@ -12,6 +12,12 @@
 #define PH_PRINT_THINK 0
 #define PH_PRINT_EAT 1
 #define PH_PRINT_SLEEP 2
+#define PH_PRINT_DEATH 3
+
+#define true 1
+#define false 0
+
+#define bool int
 
 #include <stdio.h>
 #include <sys/time.h>
@@ -23,7 +29,10 @@ typedef struct s_sim_data t_sim_data;
 typedef struct s_philosopher
 {
 	pthread_t philo_thread;
+	struct timeval last_time_ate;
+	bool is_dead;
 	int id;
+	int meals_eaten;
 	t_sim_data *data;
 	
 } t_philosopher;
@@ -35,6 +44,7 @@ typedef struct s_sim_data
 	int time_to_eat;
 	int time_to_sleep;
 	int mealsCount;
+	bool should_stop;
 	pthread_mutex_t *forks;
 	pthread_mutex_t write_lock;
 	struct timeval start_time;
