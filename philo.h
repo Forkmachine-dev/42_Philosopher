@@ -9,10 +9,11 @@
 #define PH_FAILED_THREAD_CREATE 4
 #define PH_FAILED_INVALID_ARGS 5
 
-#define PH_PRINT_THINK 0
-#define PH_PRINT_EAT 1
-#define PH_PRINT_SLEEP 2
-#define PH_PRINT_DEATH 3
+#define PH_PRINT_THINK 6
+#define PH_PRINT_EAT 7
+#define PH_PRINT_SLEEP 8
+#define PH_PRINT_DEATH 9
+#define PH_PRINT_TAKE_FORK 10
 
 #define true 1
 #define false 0

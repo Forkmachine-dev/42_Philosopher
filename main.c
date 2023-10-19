@@ -17,6 +17,20 @@ long long get_time_ms(struct timeval start_time)
 	return c_milliseconds - s_milliseconds;
 }
 
+void ms_sleep(long long msec, t_sim_data* data)
+{
+	struct timeval enter_time;
+
+	gettimeofday(&enter_time, nullptr);
+	while (true)
+	{
+		if(data->should_stop)
+			return;
+		if(msec <= get_time_ms(enter_time))
+			break;
+	}
+}
+
 int fill_args(int ac, char **av, t_sim_data *data)
 {
 	if(ac < 4 || ac > 5)
@@ -28,7 +42,7 @@ int fill_args(int ac, char **av, t_sim_data *data)
 	if(ac == 5)
 		data->mealsCount = ft_atoi(av[4]);
 	else 
-		data->mealsCount = 0;
+		data->mealsCount = -1;
 	data->should_stop = false;
 	gettimeofday(&data->start_time, nullptr);
 	return (0);
@@ -58,7 +72,6 @@ void print_data(t_sim_data *data)
 	printf("Time To Eat: %d\n",data->time_to_eat);
 	printf("Time To Sleep: %d\n",data->time_to_sleep);
 	printf("Number of Meals: %d\n",data->mealsCount);
-
 }
 
 
@@ -76,28 +89,35 @@ void lock_and_print(t_philosopher *ph, int what)
 	}
 	if (what == PH_PRINT_DEATH)
 	{
-		printf("%lld ms: %d is dead\n", get_time_ms(ph->data->start_time), ph->id);
+		printf("%lld ms: %d died	 		 |%lldms|%d\n", get_time_ms(ph->data->start_time), ph->id, t,ph->meals_eaten);
 		ph->data->should_stop = true;
 	}
 	else if(what == PH_PRINT_THINK)
-		printf("%lld ms: %d is thinking      |%lldms\n", get_time_ms(ph->data->start_time), ph->id, t);
+		printf("%lld ms: %d is thinking      |%lldms|%d\n", get_time_ms(ph->data->start_time), ph->id, t,ph->meals_eaten);
 	else if (what == PH_PRINT_EAT)
-		printf("%lld ms: %d is eating        |%lldms\n", get_time_ms(ph->data->start_time), ph->id, t);
+		printf("%lld ms: %d is eating        |%lldms|%d\n", get_time_ms(ph->data->start_time), ph->id, t,ph->meals_eaten);
 	else if (what == PH_PRINT_SLEEP)
-		printf("%lld ms: %d is sleeping      |%lldms\n", get_time_ms(ph->data->start_time), ph->id, t);
+		printf("%lld ms: %d is sleeping      |%lldms|%d\n", get_time_ms(ph->data->start_time), ph->id, t,ph->meals_eaten);
+	else if (what == PH_PRINT_TAKE_FORK)
+		printf("%lld ms: %d has taken a fork |%lldms|%d\n", get_time_ms(ph->data->start_time), ph->id, t,ph->meals_eaten);
 	pthread_mutex_unlock(&ph->data->write_lock);
 }
 
 bool check_death(t_philosopher *ph)
 {
-	long long t = get_time_ms(ph->last_time_ate);
-	//printf("ph %d| t: %lldms | tmd:%lld\n", ph->id, t,(long long) ph->data->time_to_die);
+	long long t;
+	
+	if(ph->last_time_ate.tv_sec == -100)
+		return false;
+	t = get_time_ms(ph->last_time_ate);
+
 	if (t >= (long long)ph->data->time_to_die)
 	{
-		ph->is_dead = true;
-		lock_and_print(ph, PH_PRINT_DEATH);
-		return true;
+			ph->is_dead = true;
+			lock_and_print(ph, PH_PRINT_DEATH);
+			return true;
 	}
+		
 	return false;
 }
 
@@ -114,22 +134,27 @@ void eat(t_philosopher *ph)
 	int id = ph->id;
 	if(id % 2 != 0)
 		usleep(100);
-	if(check_death(ph))
+	pthread_mutex_lock(&ph->data->forks[id]);
+	lock_and_print(ph,PH_PRINT_TAKE_FORK);
+	if(ph->data->should_stop)
 		return;
 	pthread_mutex_lock(left_fork(ph));
-	pthread_mutex_lock(&ph->data->forks[id]);
+	lock_and_print(ph,PH_PRINT_TAKE_FORK);
+	if(ph->data->should_stop)
+		return;
 	gettimeofday(&ph->last_time_ate, nullptr);	
 	lock_and_print(ph, PH_PRINT_EAT);
-	usleep(ph->data->time_to_eat * 1000);
+	ms_sleep(ph->data->time_to_eat, ph->data);
+	ph->meals_eaten++;
 	pthread_mutex_unlock(left_fork(ph));
 	pthread_mutex_unlock(&ph->data->forks[id]);
 }
 void sleep_ph(t_philosopher *ph)
 {
-	if(check_death(ph))
+	if(ph->data->should_stop)
 		return;
 	lock_and_print(ph, PH_PRINT_SLEEP);
-	usleep(ph->data->time_to_sleep * 1000);
+	ms_sleep(ph->data->time_to_sleep, ph->data);
 }
 
 
@@ -164,9 +189,11 @@ int init_philosophers(t_sim_data *data)
 		data->philos[i].id = i;
 		data->philos[i].is_dead = false;
 		data->philos[i].meals_eaten = 0;
+		data->philos[i].last_time_ate.tv_sec = -100;
 		if(assert(pthread_create(&data->philos[i].philo_thread, nullptr,life, &data->philos[i])) != PH_SUCCESS)
 			return PH_FAILED_THREAD_CREATE;
 		i++;
+		usleep(100);
 	}
 	return PH_SUCCESS;
 }
@@ -207,6 +234,45 @@ int init(t_sim_data *data)
 		return PH_FAILED;
 	return PH_SUCCESS;
 }
+
+bool all_eat_max(t_sim_data *data)
+{
+	int i =0;
+	if(data->mealsCount == -1)
+		return false;
+	while (i < data->entities_count)
+	{
+		if(data->philos[i].meals_eaten < data->mealsCount)
+			return false;
+		i++;
+	}
+	data->should_stop = true;
+	return true;
+
+}
+
+void check_loop(t_sim_data *data)
+{
+	int i = 0;
+	int j = 0;
+	while (true)
+	{
+		if(check_death(&data->philos[i]) || all_eat_max(data))
+		{
+			
+			while (j < data->entities_count)
+			{
+				pthread_mutex_unlock(data->forks + i);
+				j++;
+			}
+			break;;
+		}
+
+		i++;
+		if(i == data->entities_count)
+			i = 0;
+	}
+}
 int main(int ac, char **av)
 {
 	t_sim_data sim_data;
@@ -215,6 +281,7 @@ int main(int ac, char **av)
 	print_data(&sim_data);
 	if(init(&sim_data) != PH_SUCCESS)
 		return (1);
+	check_loop(&sim_data);
 	wait_threads(&sim_data);
 	return (0);
 }
