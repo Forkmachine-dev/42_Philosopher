@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/23 12:51:23 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 18:25:37 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 21:53:29 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ unsigned long long	get_time_diff(struct timeval start_time)
 
 	s_milliseconds = (long long)((start_time.tv_sec) * 1000)
 		+ (long long)(start_time.tv_usec) / 1000;
-	gettimeofday(&current_time, nullptr);
+	gettimeofday(&current_time, NULL);
 	c_milliseconds = (long long)((current_time.tv_sec) * 1000)
 		+(long long)(current_time.tv_usec) / 1000;
 	return (c_milliseconds - s_milliseconds);

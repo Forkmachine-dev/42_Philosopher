@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/23 12:51:05 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 18:29:13 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 21:55:51 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void	eat(t_philosopher *ph)
 		eat_with_left(ph);
 	else 
 		eat_with_right(ph);
-	if (ph->data->mealsCount > 0 && ph->meals_eaten != 10e6)
+	if (ph->data->meals_count > 0 && ph->meals_eaten != 10e6)
 		ph->meals_eaten--;
 }
 
@@ -75,8 +75,8 @@ void	*life(void *arg)
 	ph = (t_philosopher *)arg;
 	pthread_mutex_lock(&ph->data->mutex_lock);
 	ph->last_time_ate = get_time_diff(ph->data->start_time);
-	ph->is_running = true;
-	while (ph->data->should_stop == false) 
+	ph->is_running = TRUE;
+	while (ph->data->should_stop == FALSE) 
 	{
 		pthread_mutex_unlock(&ph->data->mutex_lock);
 		lock_and_print(ph, PH_PRINT_THINK);
@@ -89,7 +89,7 @@ void	*life(void *arg)
 			ph->meals_eaten = -10e6;
 		}
 	}
-	ph->is_running = false;
+	ph->is_running = FALSE;
 	pthread_mutex_unlock(&ph->data->mutex_lock);
-	return (nullptr);
+	return (NULL);
 }

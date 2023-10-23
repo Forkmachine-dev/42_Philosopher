@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/23 13:05:13 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 17:41:00 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 21:55:51 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,10 @@ int	init_philosophers(t_sim_data *data)
 	{
 		data->philos[i].data = data;
 		data->philos[i].id = i;
-		data->philos[i].meals_eaten = data->mealsCount;
+		data->philos[i].meals_eaten = data->meals_count;
 		data->philos[i].last_time_ate = 0;
 		if (assert(pthread_create(&data->philos[i].philo_thread, 
-					nullptr, life, &data->philos[i])) != PH_SUCCESS)
+					NULL, life, &data->philos[i])) != PH_SUCCESS)
 			return (PH_FAILED_THREAD_CREATE);
 		if (i > 100)
 			usleep(i);
@@ -52,11 +52,11 @@ int	init_mutexes(t_sim_data *data)
 		return (PH_FAILED_ALLOC);
 	while (i < data->entities_count)
 	{
-		if (assert(pthread_mutex_init(&data->forks[i], nullptr)) != PH_SUCCESS)
+		if (assert(pthread_mutex_init(&data->forks[i], NULL)) != PH_SUCCESS)
 			return (PH_FAILED_MUTEX_INIT);
 		i++;
 	}
-	if (assert(pthread_mutex_init(&data->mutex_lock, nullptr)) != PH_SUCCESS)
+	if (assert(pthread_mutex_init(&data->mutex_lock, NULL)) != PH_SUCCESS)
 		return (PH_FAILED_MUTEX_INIT);
 	return (PH_SUCCESS);
 }
@@ -80,12 +80,12 @@ int	fill_args(int ac, char **av, t_sim_data *data)
 	data->time_to_sleep = ft_atoi(av[3]);
 	data->eating_philos_max = data->entities_count;
 	if (ac == 5)
-		data->mealsCount = ft_atoi(av[4]);
+		data->meals_count = ft_atoi(av[4]);
 	else 
-		data->mealsCount = -1;
-	data->should_stop = false;
+		data->meals_count = -1;
+	data->should_stop = FALSE;
 	if ((data_is_valid(data, ac)) != PH_SUCCESS)
 		return (PH_FAILED_INVALID_ARGS);
-	gettimeofday(&data->start_time, nullptr);
+	gettimeofday(&data->start_time, NULL);
 	return (0);
 }

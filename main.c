@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/23 13:18:11 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 18:21:55 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 21:53:29 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void	wait_threads(t_sim_data *data)
 	i = 0;
 	while (i < data->entities_count)
 	{
-		pthread_join(data->philos[i].philo_thread, nullptr);
+		pthread_join(data->philos[i].philo_thread, NULL);
 		i++;
 	}
 }
