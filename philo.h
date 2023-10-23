@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/10/23 21:33:00 by mel-akhd          #+#    #+#             */
+/*   Updated: 2023/10/23 21:33:40 by mel-akhd         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef PHILO_H
 #define PHILO_H
 
@@ -62,11 +74,10 @@ unsigned	long long	get_time_diff(struct timeval start_time);
 void	msleep(int tts, t_sim_data *data);
 void	ms_sleep(unsigned long long msec, t_philosopher* ph);
 void	*philo_basic_life(void *philo);
-int	ft_isdigit(int c);
-int	data_is_valid(t_sim_data *data, int ac);
-int	guard(int ac, char **av);
+int		ft_isdigit(int c);
+int		data_is_valid(t_sim_data *data, int ac);
+int		guard(int ac, char **av);
 pthread_mutex_t	*left_fork(t_philosopher *ph);
-
 int	ft_atoi(const char *nptr);
 int	ft_usleep(useconds_t time);
 #endif 
