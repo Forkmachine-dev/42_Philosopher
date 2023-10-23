@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/23 13:18:11 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 13:32:32 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 13:57:17 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,35 @@ void	wait_threads(t_sim_data *data)
 	}
 }
 
+int	free_all(t_sim_data *data)
+{
+	int	i;
+
+	i = -1;
+	while (++i < data->entities_count)
+		if (pthread_mutex_destroy(&data->forks[i++]))
+			return (EXIT_FAILURE);
+	if (pthread_mutex_destroy(&data->write_lock))
+		return (EXIT_FAILURE);
+	if (pthread_mutex_destroy(&data->check_death_mutex))
+		return (EXIT_FAILURE);
+	if (pthread_mutex_destroy(&data->check_eat_mutex))
+		return (EXIT_FAILURE);
+	free(data->philos);
+	free(data->forks);
+	return (PH_SUCCESS);
+}
+
 int	main(int ac, char **av)
 {
 	t_sim_data	sim_data;
-
 	if (assert(fill_args(ac - 1, ++av, &sim_data)) != PH_SUCCESS)
-		return (1);
+		return (EXIT_FAILURE);
 	if (init(&sim_data) != PH_SUCCESS)
-		return (1);
+		return (EXIT_FAILURE);
 	check_loop(&sim_data);
 	wait_threads(&sim_data);
+	if (free_all(&sim_data) != PH_SUCCESS)
+		return (EXIT_FAILURE);
 	return (0);
 }

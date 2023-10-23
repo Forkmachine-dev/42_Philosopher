@@ -20,9 +20,6 @@ END     = echo "\033[0m"
 all : $(NAME)
 
 $(NAME) : $(OBJ) philo.h
-	echo "\033["
-	echo "\033["
-	echo "\033["
 	@$(GREEN)
 	$(CC) $(CFLAGS) $(SRC) -o $(NAME)
 	@$(END)
