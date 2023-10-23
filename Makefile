@@ -1,6 +1,41 @@
-all: 
-	cc -Wall -Wextra -Werror *.c -o Philo 
-clean:
-	rm -f Philo
-fclean:
-	rm -f Philo
+NAME    = philo
+
+SRC     = check.c  ft_atoi.c ft_time.c init.c life.c main.c print.c utils.c
+
+OBJ     = ${SRC:.c=.o}
+
+CC      = cc
+
+CFLAGS  = -Wall -Wextra -Werror
+
+RED     = echo "\033[0;31m"
+
+YELLOW  = echo "\033[0;33m"
+
+GREEN   = echo "\033[0;32m"
+
+END     = echo "\033[0m"
+
+
+all : $(NAME)
+
+$(NAME) : $(OBJ) philo.h
+	echo "\033["
+	echo "\033["
+	echo "\033["
+	@$(GREEN)
+	$(CC) $(CFLAGS) $(SRC) -o $(NAME)
+	@$(END)
+
+clean : 
+	@$(YELLOW)
+	rm -f $(OBJ)
+	@$(END)
+
+fclean : clean
+	@$(RED)
+	rm -rf $(NAME)
+	@$(END)
+
+
+re : fclean all

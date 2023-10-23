@@ -1,38 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   utilities.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/23 13:18:11 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 13:32:32 by mel-akhd         ###   ########.fr       */
+/*   Created: 2023/10/23 13:16:48 by mel-akhd          #+#    #+#             */
+/*   Updated: 2023/10/23 13:17:04 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	wait_threads(t_sim_data *data)
+pthread_mutex_t	*left_fork(t_philosopher *ph)
 {
-	int	i;
+	int	id;
 
-	i = 0;
-	while (i < data->entities_count)
-	{
-		pthread_join(data->philos[i].philo_thread, nullptr);
-		i++;
-	}
-}
-
-int	main(int ac, char **av)
-{
-	t_sim_data	sim_data;
-
-	if (assert(fill_args(ac - 1, ++av, &sim_data)) != PH_SUCCESS)
-		return (1);
-	if (init(&sim_data) != PH_SUCCESS)
-		return (1);
-	check_loop(&sim_data);
-	wait_threads(&sim_data);
-	return (0);
+	id = ph->id;
+	if (id == ph->data->entities_count - 1)
+		return (ph->data->forks);
+	return (ph->data->forks + id + 1);
 }

@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/07 05:06:16 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/07 19:37:43 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 12:59:14 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@ int	ft_isdigit(int c)
 {
 	return (c >= '0' && c <= '9');
 }
-
 
 int	ft_atoi(const char *nptr)
 {
