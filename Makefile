@@ -21,7 +21,7 @@ all : $(NAME)
 
 $(NAME) : $(OBJ) philo.h
 	@$(GREEN)
-	$(CC) $(CFLAGS) $(SRC) -o $(NAME)
+	$(CC) $(CFLAGS) $(SRC) -o $(NAME) #-g -fsanitize=thread
 	@$(END)
 
 clean : 

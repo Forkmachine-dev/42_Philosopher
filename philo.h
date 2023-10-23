@@ -45,11 +45,9 @@ typedef struct s_sim_data
 	int time_to_sleep;
 	int mealsCount;
 	bool should_stop;
-	int eating_philos;
+	int eating_philos_max;
 	pthread_mutex_t *forks;
-	pthread_mutex_t write_lock;
-	pthread_mutex_t check_death_mutex;
-	pthread_mutex_t check_eat_mutex;
+	pthread_mutex_t mutex_lock;
 	struct timeval start_time;
 	t_philosopher *philos;
 }			t_sim_data;

@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/23 13:05:13 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 13:13:27 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 17:41:00 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,13 +56,7 @@ int	init_mutexes(t_sim_data *data)
 			return (PH_FAILED_MUTEX_INIT);
 		i++;
 	}
-	if (assert(pthread_mutex_init(&data->write_lock, nullptr)) != PH_SUCCESS)
-		return (PH_FAILED_MUTEX_INIT);
-	if (assert(pthread_mutex_init(&data->check_eat_mutex, nullptr)) 
-		!= PH_SUCCESS)
-		return (PH_FAILED_MUTEX_INIT);
-	if (assert(pthread_mutex_init(&data->check_death_mutex, nullptr)) 
-		!= PH_SUCCESS)
+	if (assert(pthread_mutex_init(&data->mutex_lock, nullptr)) != PH_SUCCESS)
 		return (PH_FAILED_MUTEX_INIT);
 	return (PH_SUCCESS);
 }
@@ -84,7 +78,7 @@ int	fill_args(int ac, char **av, t_sim_data *data)
 	data->time_to_die = ft_atoi(av[1]);
 	data->time_to_eat = ft_atoi(av[2]);
 	data->time_to_sleep = ft_atoi(av[3]);
-	data->eating_philos = data->entities_count;
+	data->eating_philos_max = data->entities_count;
 	if (ac == 5)
 		data->mealsCount = ft_atoi(av[4]);
 	else 

@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/23 13:18:11 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 13:57:17 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 18:21:55 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,7 @@ int	free_all(t_sim_data *data)
 	while (++i < data->entities_count)
 		if (pthread_mutex_destroy(&data->forks[i++]))
 			return (EXIT_FAILURE);
-	if (pthread_mutex_destroy(&data->write_lock))
-		return (EXIT_FAILURE);
-	if (pthread_mutex_destroy(&data->check_death_mutex))
-		return (EXIT_FAILURE);
-	if (pthread_mutex_destroy(&data->check_eat_mutex))
+	if (pthread_mutex_destroy(&data->mutex_lock))
 		return (EXIT_FAILURE);
 	free(data->philos);
 	free(data->forks);
@@ -46,6 +42,7 @@ int	free_all(t_sim_data *data)
 int	main(int ac, char **av)
 {
 	t_sim_data	sim_data;
+
 	if (assert(fill_args(ac - 1, ++av, &sim_data)) != PH_SUCCESS)
 		return (EXIT_FAILURE);
 	if (init(&sim_data) != PH_SUCCESS)

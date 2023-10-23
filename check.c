@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/23 12:51:33 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 12:57:01 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 18:28:57 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ int	data_is_valid(t_sim_data *data, int ac)
 {
 	if (!data)
 		return (PH_FAILED_ALLOC);
-	if (data->eating_philos <= 0)
+	if (data->entities_count <= 0)
 		return (PH_FAILED_INVALID_ARGS);
 	if (data->time_to_die <= 0)
 		return (PH_FAILED_INVALID_ARGS);
@@ -55,34 +55,40 @@ bool	check_death(t_philosopher *ph)
 	unsigned long long	ct;
 	unsigned long long	last_time_ate;
 
+	pthread_mutex_lock(&ph->data->mutex_lock);
 	if (!ph->is_running)
+	{
+		pthread_mutex_unlock(&ph->data->mutex_lock);
 		return (false);
-	pthread_mutex_lock(&ph->data->check_death_mutex);
+	}
 	last_time_ate = ph->last_time_ate;
-	pthread_mutex_unlock(&ph->data->check_death_mutex);
 	ct = get_time_diff(ph->data->start_time);
 	if (ct - last_time_ate >= (unsigned long long)ph->data->time_to_die)
 	{
-		lock_and_print(ph, PH_PRINT_DEATH);
+		ph->data->should_stop = true;
+		printf("%lld %d died\n", ct, ph->id + 1);
+		pthread_mutex_unlock(&ph->data->mutex_lock);
 		return (true);
 	}
+	pthread_mutex_unlock(&ph->data->mutex_lock);
 	return (false);
 }
 
 bool	all_eat_max(t_sim_data *data)
 {
-	int	eating_philos;
+	int	eating_philos_max;
 
 	if (data->mealsCount == -1)
 		return (false);
-	pthread_mutex_lock(&data->check_eat_mutex);
-	eating_philos = data->eating_philos;
-	pthread_mutex_unlock(&data->check_eat_mutex);
-	if (eating_philos <= 0)
+	pthread_mutex_lock(&data->mutex_lock);
+	eating_philos_max = data->eating_philos_max;
+	if (eating_philos_max <= 0)
 	{
 		data->should_stop = (true);
+		pthread_mutex_unlock(&data->mutex_lock);
 		return (true);
 	}
+	pthread_mutex_unlock(&data->mutex_lock);
 	return (false);
 }
 

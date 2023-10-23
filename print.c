@@ -6,7 +6,7 @@
 /*   By: mel-akhd <mel-akhd@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/23 13:18:47 by mel-akhd          #+#    #+#             */
-/*   Updated: 2023/10/23 13:22:31 by mel-akhd         ###   ########.fr       */
+/*   Updated: 2023/10/23 18:18:21 by mel-akhd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,21 +38,14 @@ void	lock_and_print(t_philosopher *ph, int what)
 {
 	unsigned long long	t;
 
-	if (ph->data->should_stop)
-		return ;
-	pthread_mutex_lock(&ph->data->write_lock);
 	t = get_time_diff(ph->data->start_time);
+	pthread_mutex_lock(&ph->data->mutex_lock);
 	if (ph->data->should_stop)
 	{
-		pthread_mutex_unlock(&ph->data->write_lock);
+		pthread_mutex_unlock(&ph->data->mutex_lock);
 		return ;
 	}
-	if (what == PH_PRINT_DEATH)
-	{
-		printf("%lld %d died\n", t, ph->id + 1);
-		ph->data->should_stop = true;
-	}
-	else if (what == PH_PRINT_THINK)
+	if (what == PH_PRINT_THINK)
 		printf("%lld %d is thinking\n", t, ph->id + 1);
 	else if (what == PH_PRINT_EAT)
 		printf("%lld %d is eating\n", t, ph->id + 1);
@@ -60,5 +53,5 @@ void	lock_and_print(t_philosopher *ph, int what)
 		printf("%lld %d is sleeping\n", t, ph->id + 1);
 	else if (what == PH_PRINT_TAKE_FORK)
 		printf("%lld %d has taken a fork\n", t, ph->id + 1);
-	pthread_mutex_unlock(&ph->data->write_lock);
+	pthread_mutex_unlock(&ph->data->mutex_lock);
 }
